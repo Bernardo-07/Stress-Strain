@@ -29,14 +29,25 @@ def pontos_criticos(x, y):
 
     return ymin, xmin, ymax, xmax, indices_min, indices_max
 
+def reta_inicial(x, y, xmax, ymax):
+    yf = ymax[0]
+    xf = xmax[0]
+    a = (yf - y[0])/(xf - x[0])
+    b = yf - a*xf
+    return a, b
+
 dados = np.loadtxt("dados.txt", delimiter='\t')
 
-y = dados[:,1]
-x = dados[:,2]
+load = dados[:,1]
+depth = dados[:,2]
 
-Fmin, hmin, Fmax, hmax, i_min, i_max = pontos_criticos(x, y)
+Fmin, hmin, Fmax, hmax, i_min, i_max = pontos_criticos(depth, load)
+coef_ang, coef_lin = reta_inicial(depth, load, hmax, Fmax)
 
-plt.plot(x, y)
+newdepth = depth - (-coef_lin/coef_ang)
+
+plt.plot(depth, load, color='b', label='Dados originais')
+plt.plot(newdepth, load, label='Curva Calibrada')
 plt.title('Gráfico de Força por Profundidade')
 plt.scatter(hmin, Fmin, color="r", marker="D")
 plt.scatter(hmax, Fmax, color="g", marker="D")
