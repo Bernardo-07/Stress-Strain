@@ -41,6 +41,39 @@ def regressao_linear(x, y):
     y_fit = polinomio(x)
     return y_fit
 
+def rigidez(h, F, Fmax):
+    inicial = Fmax*1
+    final = Fmax*0.75
+
+    for i in range(0, len(F)):
+        if (F[i] == inicial):
+            i_inicial = i
+        else:
+            menor = F[0]
+            for j in range(0, len(F)):
+                dif = abs(F[j] - inicial)
+                if (dif < menor):
+                    menor = dif
+                    i_inicial = j
+
+    for i in range(0, len(F)):
+        if (F[i] == final):
+            newh = h[i_inicial:i]
+            newF = F[i_inicial:i]
+        else:
+            menor = F[i_inicial]
+            for j in range(0, len(F)):
+                dif = abs(F[j] - final)
+                if (dif < menor):
+                    menor = dif
+                    i_final = j
+            newh = h[i_inicial:i_final]
+            newF = F[i_inicial:i_final]
+    a, b = coeficientes(newh, newF)
+    newF_fit = regressao_linear(newh, newF)
+    return a, newh, newF_fit
+
+
 dados = np.loadtxt("dados.txt", delimiter='\t')
 
 load = dados[:,1]
@@ -50,16 +83,19 @@ coef_ang, coef_lin = coeficientes(depth, load)
 newdepth = depth - (-coef_lin/coef_ang)
 Fmin, hmin, Fmax, hmax, i_min, i_max = pontos_criticos(newdepth, load)
 
+S = [None] * (len(Fmin))
 for i in range(0, len(Fmax)):
     j = i_max[i]
     k = i_min[i]
 
     h_descarga = newdepth[j:k]
     F_descarga = load[j:k]
-    F_fit = regressao_linear(h_descarga, F_descarga)
-    plt.plot(h_descarga, F_fit, color='y')
+    S[i], h_fit, F_fit = rigidez(h_descarga, F_descarga, Fmax[i])
+    plt.plot(h_fit, F_fit, color='y')
 
-#plt.plot(depth, load, color='b', label='Dados originais')
+print(S)
+
+plt.plot(depth, load, color='b', label='Dados originais')
 plt.plot(newdepth, load, label='Curva Calibrada')
 plt.title('Gráfico de Força por Profundidade')
 plt.scatter(hmin, Fmin, color="r", marker="D")
