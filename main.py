@@ -82,6 +82,9 @@ dados = np.loadtxt("dados.txt", delimiter='\t')
 load = dados[:,1]
 depth = dados[:,2]
 
+compliance = 0
+depth = depth - compliance*load
+
 coef_ang, coef_lin = coeficientes(depth, load)
 newdepth = depth - (-coef_lin/coef_ang)
 Fmin, hmin, Fmax, hmax, i_min, i_max = pontos_criticos(newdepth, load)
