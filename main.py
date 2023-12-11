@@ -50,21 +50,14 @@ depth = dados[:,2]
 Fmin, hmin, Fmax, hmax, i_min, i_max = pontos_criticos(depth, load)
 coef_ang, coef_lin = coeficientes(depth, load, hmax, Fmax)
 
-zero = 0
 for i in range(0, len(Fmax)):
     j = i_max[i]
     k = i_min[i]
 
-    h = depth[zero:j]
-    F = load[zero:j]
-    zero = k
-    F_fit = regressao_linear(h, F)
-    plt.plot(h, F_fit, color = 'y')
-
     h_descarga = depth[j:k]
     F_descarga = load[j:k]
-    F_fit_descarga = regressao_linear(h_descarga, F_descarga)
-    plt.plot(h_descarga, F_fit_descarga, color='y')
+    F_fit = regressao_linear(h_descarga, F_descarga)
+    plt.plot(h_descarga, F_fit, color='y')
 
 newdepth = depth - (-coef_lin/coef_ang)
 
