@@ -29,11 +29,10 @@ def pontos_criticos(x, y):
 
     return ymin, xmin, ymax, xmax, indices_min, indices_max
 
-def coeficientes(x, y, xmax, ymax):
-    yf = ymax[0]
-    xf = xmax[0]
-    a = (yf - y[0])/(xf - x[0])
-    b = yf - a*xf
+def coeficientes(x, y):
+    coef = np.polyfit(x, y, 1)
+    a = coef[0]
+    b = coef[1]
     return a, b
 
 def regressao_linear(x, y):
@@ -47,8 +46,8 @@ dados = np.loadtxt("dados.txt", delimiter='\t')
 load = dados[:,1]
 depth = dados[:,2]
 
+coef_ang, coef_lin = coeficientes(depth, load)
 Fmin, hmin, Fmax, hmax, i_min, i_max = pontos_criticos(depth, load)
-coef_ang, coef_lin = coeficientes(depth, load, hmax, Fmax)
 
 for i in range(0, len(Fmax)):
     j = i_max[i]
