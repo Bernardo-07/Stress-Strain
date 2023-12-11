@@ -29,12 +29,18 @@ def pontos_criticos(x, y):
 
     return ymin, xmin, ymax, xmax, indices_min, indices_max
 
-def reta_inicial(x, y, xmax, ymax):
+def coeficientes(x, y, xmax, ymax):
     yf = ymax[0]
     xf = xmax[0]
     a = (yf - y[0])/(xf - x[0])
     b = yf - a*xf
     return a, b
+
+def regressao_linear(x, y):
+    coef = np.polyfit(x, y, 1)
+    polinomio = np.poly1d(coef)
+    y_fit = polinomio(x)
+    return y_fit
 
 dados = np.loadtxt("dados.txt", delimiter='\t')
 
@@ -42,7 +48,23 @@ load = dados[:,1]
 depth = dados[:,2]
 
 Fmin, hmin, Fmax, hmax, i_min, i_max = pontos_criticos(depth, load)
-coef_ang, coef_lin = reta_inicial(depth, load, hmax, Fmax)
+coef_ang, coef_lin = coeficientes(depth, load, hmax, Fmax)
+
+zero = 0
+for i in range(0, len(Fmax)):
+    j = i_max[i]
+    k = i_min[i]
+
+    h = depth[zero:j]
+    F = load[zero:j]
+    zero = k
+    F_fit = regressao_linear(h, F)
+    plt.plot(h, F_fit, color = 'y')
+
+    h_descarga = depth[j:k]
+    F_descarga = load[j:k]
+    F_fit_descarga = regressao_linear(h_descarga, F_descarga)
+    plt.plot(h_descarga, F_fit_descarga, color='y')
 
 newdepth = depth - (-coef_lin/coef_ang)
 
