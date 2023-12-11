@@ -69,9 +69,12 @@ def rigidez(h, F, Fmax):
                     i_final = j
             newh = h[i_inicial:i_final]
             newF = F[i_inicial:i_final]
+
     a, b = coeficientes(newh, newF)
     newF_fit = regressao_linear(newh, newF)
-    return a, newh, newF_fit
+    hp = -b/a
+
+    return a, newh, newF_fit, hp
 
 
 dados = np.loadtxt("dados.txt", delimiter='\t')
@@ -84,16 +87,18 @@ newdepth = depth - (-coef_lin/coef_ang)
 Fmin, hmin, Fmax, hmax, i_min, i_max = pontos_criticos(newdepth, load)
 
 S = [None] * (len(Fmin))
+hp = [None] * (len(Fmin))
 for i in range(0, len(Fmax)):
     j = i_max[i]
     k = i_min[i]
 
     h_descarga = newdepth[j:k]
     F_descarga = load[j:k]
-    S[i], h_fit, F_fit = rigidez(h_descarga, F_descarga, Fmax[i])
+    S[i], h_fit, F_fit, hp[i] = rigidez(h_descarga, F_descarga, Fmax[i])
     plt.plot(h_fit, F_fit, color='y')
 
 print(S)
+print(hp) #deformação plástica
 
 plt.plot(depth, load, color='b', label='Dados originais')
 plt.plot(newdepth, load, label='Curva Calibrada')
