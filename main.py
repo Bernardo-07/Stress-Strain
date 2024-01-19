@@ -78,8 +78,7 @@ def stiffness(h, F, Fmax):
 
     return a, newh, newF_fit, hp
 
-def stress_strain(n, hmax, Fmax, S):
-    R = 0.5
+def stress_strain(R, n, hmax, Fmax, S):
     hc = hmax - (0.75*(Fmax/S))
     a = np.sqrt((5*(2-n)/(2*(4+n)))*((2*R*hc)-(hc*hc)))
     stress = (1/3)*(Fmax/(np.pi*a*a))
@@ -138,17 +137,23 @@ plt.legend()
 plt.grid(True)
 plt.show()
 
-plt.figure()
+R = 0.5
 stress = [None] * len(Fmin)
 strain = [None] * len(Fmin)
 #escolha de um valor próximo para n
 n = 0.14
 for i in range(0, len(Fmax)):
     #cálculo da tensão e deformação representativa
-    stress[i], strain[i] = stress_strain(n, hmax[i], Fmax[i], S[i])
+    stress[i], strain[i] = stress_strain(R, n, hmax[i], Fmax[i], S[i])
 
     #método de mínimos quadrados para econtrar o melhor valor para K e n
     initial_params = [1406.048, 0.14] 
     bounds = ([703.24, 0.07], [2109.072, 0.21])
     result = least_squares(error, initial_params, bounds=bounds, args=(strain[i], stress[i]))
     K, n = result.x
+
+stress_opt = function(strain, K, n)
+plt.figure()
+plt.plot(strain, stress_opt)
+plt.grid(True)
+plt.show()
