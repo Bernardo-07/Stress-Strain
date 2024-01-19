@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.optimize import least_squares
+
 
 def critical_point(x, y):
 
@@ -85,6 +87,16 @@ def stress_strain(n, hmax, Fmax, S):
     strain = (0.14/aux)*(a/R)
     return stress, strain
 
+def function(x, K, n):
+    #calcula a tensão constitutiva
+    return K * np.power(x, n)
+
+def error(params, strain, stress):
+    #retorna a diferença/erro entre a tensão observada e a calculada
+    K, n = params
+    calc_stress = function(strain, K, n)
+    return stress - calc_stress
+
 
 dados = np.loadtxt("dados.txt", delimiter='\t')
 
@@ -94,10 +106,13 @@ depth = dados[:,2]
 compliance = 0
 depth = depth - compliance*load
 
+depth = depth*0.001 #conversão para milimetros
+
 coef_ang, coef_lin = coefficients(depth, load)
 newdepth = depth - (-coef_lin/coef_ang)
 Fmin, hmin, Fmax, hmax, i_min, i_max = critical_point(newdepth, load)
 
+plt.figure()
 S = [None] * (len(Fmin))
 hp = [None] * (len(Fmin))
 for i in range(0, len(Fmax)):
@@ -117,8 +132,23 @@ plt.plot(newdepth, load, label='Curva Calibrada')
 plt.title('Gráfico de Força por Profundidade')
 plt.scatter(hmin, Fmin, color="r", marker="D")
 plt.scatter(hmax, Fmax, color="g", marker="D")
-plt.xlabel('h (µm)')
+plt.xlabel('h (mm)')
 plt.ylabel('F (N)')
 plt.legend()
 plt.grid(True)
 plt.show()
+
+plt.figure()
+stress = [None] * len(Fmin)
+strain = [None] * len(Fmin)
+#escolha de um valor próximo para n
+n = 0.14
+for i in range(0, len(Fmax)):
+    #cálculo da tensão e deformação representativa
+    stress[i], strain[i] = stress_strain(n, hmax[i], Fmax[i], S[i])
+
+    #método de mínimos quadrados para econtrar o melhor valor para K e n
+    initial_params = [1406.048, 0.14] 
+    bounds = ([703.24, 0.07], [2109.072, 0.21])
+    result = least_squares(error, initial_params, bounds=bounds, args=(strain[i], stress[i]))
+    K, n = result.x
