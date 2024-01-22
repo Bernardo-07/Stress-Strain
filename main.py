@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import least_squares
 
-
 def critical_point(x, y):
 
     ymin, xmin, ymax, xmax = list(), list(), list(), list()
@@ -133,10 +132,11 @@ plt.scatter(hmin, Fmin, color="r", marker="D")
 plt.scatter(hmax, Fmax, color="g", marker="D")
 plt.xlabel('h (mm)')
 plt.ylabel('F (N)')
-plt.legend()
 plt.grid(True)
 plt.show()
 
+#Gráfico de tensão por deformação pelo novo método ISIT
+plt.figure()
 R = 0.5
 stress = [None] * len(Fmin)
 strain = [None] * len(Fmin)
@@ -153,7 +153,6 @@ for i in range(0, len(Fmax)):
     K, n = result.x
 
 stress_opt = function(strain, K, n)
-plt.figure()
-plt.plot(strain, stress_opt)
+plt.scatter(strain, stress_opt)
 plt.grid(True)
 plt.show()
