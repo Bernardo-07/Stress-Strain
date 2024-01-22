@@ -163,6 +163,7 @@ for i in range(0, len(Fmax)):
     result = least_squares(error, initial_params, bounds=bounds, args=(strain[i], stress[i]))
     K, n = result.x
 
+#plotagem dos pontos representativos da deformação plástica
 stress_opt = function(strain, K, n)
 plt.scatter(strain, stress_opt)
 
@@ -176,6 +177,18 @@ for i in range(0, len(Fmax)):
     E = young_modulus(a, S[i])
     y[i] = Fmax[i]/(4*a*a)
     x[i] = a/R
+
+#cálculo do limite de escoamento
+newx = np.log(x)
+newy = np.log(y)
+A, B = coefficients(newx, newy)
+yield_stress = 0.2285*A + 0
+
+#plotagem da reta de deformação elástica
+yield_strain = yield_stress/E
+x_line = np.linspace(0, yield_strain, 100)
+y_line = E*x_line
+plt.plot(x_line, y_line)
 
 plt.grid(True)
 plt.show()
