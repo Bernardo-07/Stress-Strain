@@ -77,6 +77,11 @@ def stiffness(h, F, Fmax):
 
     return a, newh, newF_fit, hp
 
+def contact_radius(R, n, hmax, Fmax, S):
+    hc = hmax - (0.75*(Fmax/S))
+    a = np.sqrt((5*(2-n)/(2*(4+n)))*((2*R*hc)-(hc*hc)))
+    return a
+
 def stress_strain(R, n, hmax, Fmax, S):
     hc = hmax - (0.75*(Fmax/S))
     a = np.sqrt((5*(2-n)/(2*(4+n)))*((2*R*hc)-(hc*hc)))
@@ -95,6 +100,12 @@ def error(params, strain, stress):
     calc_stress = function(strain, K, n)
     return stress - calc_stress
 
+def young_modulus(a, S):
+    v = 0.3
+    vi = 0.21
+    Ei = 630000
+    E = (1 - (v*v))/((2*a/S) - ((1-(vi*vi))/Ei))
+    return E
 
 dados = np.loadtxt("dados.txt", delimiter='\t')
 
@@ -139,7 +150,7 @@ plt.show()
 plt.figure()
 R = 0.5
 stress = [None] * len(Fmin)
-strain = [None] * len(Fmin)
+strain = [None] * len(hmin)
 #escolha de um valor próximo para n
 n = 0.14
 for i in range(0, len(Fmax)):
@@ -154,5 +165,17 @@ for i in range(0, len(Fmax)):
 
 stress_opt = function(strain, K, n)
 plt.scatter(strain, stress_opt)
+
+#Construção da reta de deformação elástica
+x = [None] * len(hmin)
+y = [None] * len(Fmin)
+for i in range(0, len(Fmax)):
+    #optimazação do raio de contato
+    a = contact_radius(R, n, hmax[i], Fmax[i], S[i])
+
+    E = young_modulus(a, S[i])
+    y[i] = Fmax[i]/(4*a*a)
+    x[i] = a/R
+
 plt.grid(True)
 plt.show()
