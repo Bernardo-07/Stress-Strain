@@ -174,7 +174,10 @@ for i in range(0, len(Fmax)):
     #optimazação do raio de contato
     a = contact_radius(R, n, hmax[i], Fmax[i], S[i])
 
-    E = young_modulus(a, S[i])
+    #cálculo do modulo de elasticidade do primeiro ciclo
+    if(i == 0):
+        E = young_modulus(a, S[i])
+    
     y[i] = Fmax[i]/(4*a*a)
     x[i] = a/R
 
@@ -182,7 +185,9 @@ for i in range(0, len(Fmax)):
 newx = np.log(x)
 newy = np.log(y)
 A, B = coefficients(newx, newy)
-yield_stress = 0.2285*A + 0
+M = A + 2
+material_param = np.exp(B)
+yield_stress = 0.2285*material_param + 0
 
 #plotagem da reta de deformação elástica
 yield_strain = yield_stress/E
