@@ -43,8 +43,8 @@ def linear_regression(x, y):
     return y_fit
 
 def stiffness(h, F, Fmax):
-    initial = Fmax*1
-    final = Fmax*0.75
+    initial = Fmax*1 #->input
+    final = Fmax*0.75 #->input
 
     for i in range(0, len(F)):
         if (F[i] == initial):
@@ -112,12 +112,17 @@ dados = np.loadtxt("dados.txt", delimiter='\t')
 load = dados[:,1]
 depth = dados[:,2]
 
-compliance = 0
+compliance = 0 #->input
 depth = depth - compliance*load
 
 depth = depth*0.001 #conversão para milimetros
 
-coef_ang, coef_lin = coefficients(depth, load)
+Fmin, hmin, Fmax, hmax, i_min, i_max = critical_point(depth, load)
+j = i_max[0]
+h_first_cycle = depth[0:j]
+F_first_cycle = load[0:j]
+
+coef_ang, coef_lin = coefficients(h_first_cycle, F_first_cycle)
 newdepth = depth - (-coef_lin/coef_ang)
 Fmin, hmin, Fmax, hmax, i_min, i_max = critical_point(newdepth, load)
 
@@ -141,6 +146,8 @@ plt.plot(newdepth, load, label='Curva Calibrada')
 plt.title('Gráfico de Força por Profundidade')
 plt.scatter(hmin, Fmin, color="r", marker="D")
 plt.scatter(hmax, Fmax, color="g", marker="D")
+plt.xlim(left=0)  
+plt.ylim(bottom=0) 
 plt.xlabel('h (mm)')
 plt.ylabel('F (N)')
 plt.grid(True)
@@ -170,20 +177,26 @@ plt.scatter(strain, stress_opt)
 #Construção da reta de deformação elástica
 x = [None] * len(hmin)
 y = [None] * len(Fmin)
+a = [None] * len(Fmin)
 for i in range(0, len(Fmax)):
     #optimazação do raio de contato
-    a = contact_radius(R, n, hmax[i], Fmax[i], S[i])
+    a[i] = contact_radius(R, n, hmax[i], Fmax[i], S[i])
 
     #cálculo do modulo de elasticidade do primeiro ciclo
     if(i == 0):
-        E = young_modulus(a, S[i])
+        E = young_modulus(a[i], S[i])
     
-    y[i] = Fmax[i]/(4*a*a)
-    x[i] = a/R
+    y[i] = Fmax[i]/(4*a[i]*a[i])
+    x[i] = a[i]/R
 
 #cálculo do limite de escoamento
 newx = np.log(x)
 newy = np.log(y)
+#y = material_param*(x)^(M - 2)
+#log(y) = log(material_param*(x)^(M - 2))
+#log(y) = log(material_param) + log(x^(M - 2))
+#log(y) = log(material_param) + (M - 2)*log(x)
+#log(y) = B + A*log(x)
 A, B = coefficients(newx, newy)
 M = A + 2
 material_param = np.exp(B)
@@ -193,7 +206,9 @@ yield_stress = 0.2285*material_param + 0
 yield_strain = yield_stress/E
 x_line = np.linspace(0, yield_strain, 100)
 y_line = E*x_line
-plt.plot(x_line, y_line)
-
+plt.plot(x_line, y_line, color='orange')
+plt.title('Gráfico de Tensão-Deformação')
+plt.xlabel('Deformação')
+plt.ylabel('Tensão (Mpa)')
 plt.grid(True)
 plt.show()
