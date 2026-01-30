@@ -50,10 +50,6 @@ The computational workflow follows these main steps:
    - Based on geometric and mechanical relations from the literature.
 
 6. **Constitutive model fitting**
-   - Power-law model:
-     \[
-     \sigma = K \cdot \varepsilon^n
-     \]
    - Parameter estimation via nonlinear least squares (`scipy.optimize.least_squares`).
 
 7. **Additional property estimation**
